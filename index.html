@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Engineering Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 24px 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    header h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.3px; }
+    header p { margin-top: 5px; opacity: 0.6; font-size: 0.88rem; }
+    header .updated { margin-top: 3px; opacity: 0.45; font-size: 0.78rem; }
+
+    .container { padding: 24px 32px; max-width: 1600px; }
+
+    /* Stats */
+    .stats { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+    .stat-card {
+      background: white; border-radius: 12px; padding: 14px 22px;
+      flex: 1; min-width: 150px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-left: 4px solid;
+    }
+    .stat-card .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: #888; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; margin-top: 2px; line-height: 1; }
+    .stat-card .sub { font-size: 0.72rem; color: #aaa; margin-top: 3px; }
+    .s-total { border-color: #64748b; }
+    .s-gb    { border-color: #4F86C6; }
+    .s-gk    { border-color: #5BAD72; }
+    .s-ghd   { border-color: #E5813A; }
+    .s-hg    { border-color: #9B6EC8; }
+    .s-done  { border-color: #22c55e; }
+    .stat-card .year-rows { margin-top: 6px; }
+    .stat-card .year-row  { display: flex; justify-content: space-between; font-size: 0.72rem; color: #666; margin-top: 3px; }
+    .stat-card .year-row .yr { color: #999; }
+    .stat-card .year-row .yv { font-weight: 700; }
+
+    /* Filters */
+    .filters { display: flex; gap: 8px; margin-bottom: 18px; align-items: center; flex-wrap: wrap; }
+    .filters .f-label { font-size: 0.82rem; color: #888; margin-right: 4px; }
+    .filter-btn {
+      padding: 6px 16px; border-radius: 20px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer; font-size: 0.82rem; font-weight: 500;
+      transition: all 0.18s; background: white; color: #666;
+    }
+    .filter-btn:hover { border-color: #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .filter-btn.active { color: white; border-color: transparent; }
+    .filter-btn[data-team="all"].active            { background: #1a1a2e; }
+    .filter-btn[data-team="Ground Breakers"].active { background: #4F86C6; }
+    .filter-btn[data-team="GroundsKeepers"].active  { background: #5BAD72; }
+    .filter-btn[data-team="Groundhog Day"].active   { background: #E5813A; }
+    .filter-btn[data-team="Higher Ground"].active   { background: #9B6EC8; }
+
+    /* Panel */
+    .panel {
+      background: white; border-radius: 16px;
+      padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      overflow-x: auto; margin-bottom: 22px;
+    }
+    .panel h2 { font-size: 0.95rem; font-weight: 600; color: #334; margin-bottom: 16px; }
+    .panel h2 span { font-size: 0.75rem; font-weight: 400; color: #aaa; }
+
+    /* Gantt */
+    .gantt { min-width: 860px; }
+    .gantt-head { display: flex; margin-bottom: 0; }
+    .g-label-col { width: 210px; min-width: 210px; flex-shrink: 0; }
+    .g-track { flex: 1; position: relative; }
+
+    .quarter-row { position: relative; height: 28px; margin-bottom: 6px; border-bottom: 1px solid #eee; }
+    .month-tick {
+      position: absolute; bottom: 4px;
+      font-size: 0.63rem; color: #c0c0c0;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+    .quarter-tick {
+      position: absolute; bottom: 6px;
+      font-size: 0.7rem; color: #888; font-weight: 600;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    /* Team group */
+    .team-group { margin-bottom: 4px; }
+    .team-header-row { display: flex; align-items: center; padding: 10px 0 4px; }
+    .team-header-label {
+      width: 210px; min-width: 210px;
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      padding-right: 12px;
+    }
+    .team-divider { flex: 1; height: 2px; border-radius: 2px; opacity: 0.45; }
+
+    /* Row */
+    .impl-row { display: flex; align-items: center; height: 34px; }
+    .impl-name {
+      width: 210px; min-width: 210px;
+      font-size: 0.78rem; color: #555;
+      padding-right: 12px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .impl-row:hover .impl-name { color: #111; }
+    .bar-track {
+      flex: 1; height: 34px;
+      position: relative;
+      border-left: 1px solid #f0f0f0;
+    }
+
+    /* Grid lines */
+    .g-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #f3f3f3; pointer-events: none; }
+    .g-line.quarter { background: #e8e8e8; }
+
+    /* Bars */
+    .bar {
+      position: absolute; height: 22px; top: 6px;
+      border-radius: 6px;
+      display: flex; align-items: center;
+      padding: 0 7px;
+      font-size: 0.64rem; color: white;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: filter 0.15s, transform 0.1s;
+    }
+    .bar:hover { filter: brightness(1.12); transform: scaleY(1.08); }
+
+    /* Tooltip */
+    .tooltip {
+      position: fixed; background: rgba(15,15,35,0.96);
+      color: white; border-radius: 10px;
+      padding: 12px 16px; font-size: 0.78rem;
+      pointer-events: none; z-index: 9999;
+      display: none; box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+      min-width: 210px;
+    }
+    .tooltip .t-name { font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; }
+    .tooltip .t-team { font-size: 0.72rem; opacity: 0.55; margin-bottom: 10px; }
+    .tooltip .t-row { display: flex; justify-content: space-between; gap: 14px; margin-top: 5px; }
+    .tooltip .t-key { opacity: 0.55; }
+    .tooltip .t-dur { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 8px; font-size: 0.72rem; opacity: 0.75; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    thead th {
+      text-align: left; padding: 10px 14px;
+      background: #f8f9fb; color: #555;
+      font-weight: 600; font-size: 0.72rem;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 2px solid #eee;
+      cursor: pointer; user-select: none;
+    }
+    thead th:hover { background: #f0f2f6; }
+    td { padding: 9px 14px; border-bottom: 1px solid #f4f4f4; color: #333; }
+    tbody tr:hover td { background: #fafbff; }
+    .badge {
+      display: inline-block; padding: 2px 10px;
+      border-radius: 12px; font-size: 0.7rem;
+      font-weight: 600; color: white;
+    }
+    .dur { font-size: 0.75rem; color: #888; }
+
+    @media (max-width: 768px) {
+      .container { padding: 16px; }
+      header { padding: 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Data Engineering Dashboard</h1>
+  <p>Implementation Timeline &amp; Team Assignments</p>
+  <div class="updated" id="last-updated"></div>
+</header>
+
+<div class="container">
+  <div class="stats" id="stats"></div>
+  <div class="filters" id="filters"></div>
+
+  <div class="panel">
+    <h2>Implementation Timeline <span id="showing-count"></span></h2>
+    <div class="gantt" id="gantt"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Implementation Details</h2>
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortTable('team')">Team</th>
+          <th onclick="sortTable('name')">Implementation</th>
+          <th onclick="sortTable('start')">Start Date</th>
+          <th onclick="sortTable('end')">End Date</th>
+          <th onclick="sortTable('duration')">Duration</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ── Data (auto-refreshed weekly from Notion) ─────────────────────────────────
+const RAW = [
+  {
+    "team": "Ground Breakers",
+    "name": "Kaiser Pareo ROC",
+    "start": "2025-01-01",
+    "end": "2025-04-20"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "Evernorth",
+    "start": "2025-01-01",
+    "end": "2025-04-23"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "GEHA",
+    "start": "2025-03-01",
+    "end": "2025-04-30"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "P32H",
+    "start": "2025-04-14",
+    "end": "2025-07-09"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "Samaritan",
+    "start": "2025-04-28",
+    "end": "2025-07-10"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "CareFirstRx",
+    "start": "2025-09-22",
+    "end": "2025-12-10"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "Aetna QNXT Rx",
+    "start": "2025-12-22",
+    "end": "2026-02-13"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "Arkansas Blue Med",
+    "start": "2026-03-01",
+    "end": "2026-06-01"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "Molina",
+    "start": "2026-03-15",
+    "end": "2026-06-15"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "HCSC",
+    "start": "2026-05-01",
+    "end": "2026-08-01"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "HMSA",
+    "start": "2026-05-01",
+    "end": "2026-08-01"
+  },
+  {
+    "team": "Ground Breakers",
+    "name": "P32H Rx",
+    "start": "2026-05-01",
+    "end": "2026-08-01"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "Kaiser Pareo NCAL/SCAL",
+    "start": "2025-01-01",
+    "end": "2025-04-01"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "AetnaRCE CC & Layout",
+    "start": "2025-01-01",
+    "end": "2025-04-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "BCBSNC SMA Layout",
+    "start": "2025-01-01",
+    "end": "2025-03-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "BCBSNCRX Part D",
+    "start": "2025-01-01",
+    "end": "2025-04-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "Kaiser SC elig fallout",
+    "start": "2025-04-21",
+    "end": "2025-05-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "NCState Aetna",
+    "start": "2025-05-12",
+    "end": "2025-07-07"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "AetnaRCE Updates, Rebuilds",
+    "start": "2025-05-15",
+    "end": "2025-07-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "BSCA",
+    "start": "2025-07-01",
+    "end": "2025-09-01"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "Medstar",
+    "start": "2025-07-15",
+    "end": "2025-10-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "WebTPA",
+    "start": "2025-06-15",
+    "end": "2025-10-07"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "AetnaRCE Rebuilds",
+    "start": "2025-11-01",
+    "end": "2026-01-01"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "Aetna Mercy Care",
+    "start": "2025-12-01",
+    "end": "2026-01-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "BCBSNC D-SNP",
+    "start": "2026-02-01",
+    "end": "2026-04-01"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "UnitedRx",
+    "start": "2026-02-01",
+    "end": "2026-05-01"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "EmblemRx PBM Migration",
+    "start": "2026-03-15",
+    "end": "2026-06-15"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "Medica DeanRx",
+    "start": "2026-04-01",
+    "end": "2026-07-01"
+  },
+  {
+    "team": "GroundsKeepers",
+    "name": "Christus",
+    "start": "2026-05-15",
+    "end": "2026-08-15"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "Qual Choice",
+    "start": "2025-05-19",
+    "end": "2025-07-17"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "BCBS SC Rx",
+    "start": "2025-05-12",
+    "end": "2025-07-24"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "Aetna QNXT Medical (CC)",
+    "start": "2025-06-01",
+    "end": "2025-08-04"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "UPMC",
+    "start": "2025-09-08",
+    "end": "2025-12-10"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "Solutions Group",
+    "start": "2025-11-17",
+    "end": "2026-01-01"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "Arkansas Blue Rx",
+    "start": "2026-01-01",
+    "end": "2026-04-01"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "Centene Pre-pay",
+    "start": "2026-05-01",
+    "end": "2026-08-01"
+  },
+  {
+    "team": "Groundhog Day",
+    "name": "Schumacher",
+    "start": "2026-05-01",
+    "end": "2026-08-01"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Kaiser HC TPL Notes",
+    "start": "2025-05-01",
+    "end": "2025-06-01"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Wellmark",
+    "start": "2025-05-01",
+    "end": "2025-07-01"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Excellus",
+    "start": "2025-05-12",
+    "end": "2025-10-01"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Kaiser PP COB - MC and ACT",
+    "start": "2025-06-15",
+    "end": "2025-08-15"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "BCBS KS Med",
+    "start": "2025-07-01",
+    "end": "2025-09-01"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "AetnaRx CET layout",
+    "start": "2025-08-01",
+    "end": "2025-09-22"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Kaiser AMB (SC/NC) Client Issue",
+    "start": "2025-08-04",
+    "end": "2025-09-15"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Kaiser AMB (MOCs) Client Issue",
+    "start": "2025-08-04",
+    "end": "2025-09-15"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Kaiser PP COB - O2",
+    "start": "2025-09-15",
+    "end": "2025-10-15"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "ElevanceMMM",
+    "start": "2026-02-01",
+    "end": "2026-04-15"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "BCBSMN",
+    "start": "2026-03-01",
+    "end": "2026-06-01"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Centene Dual-Eligible",
+    "start": "2026-03-15",
+    "end": "2026-05-15"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Cigna Global",
+    "start": "2026-03-15",
+    "end": "2026-05-15"
+  },
+  {
+    "team": "Higher Ground",
+    "name": "Moda Health",
+    "start": "2026-04-01",
+    "end": "2026-07-01"
+  }
+];
+const LAST_REFRESHED = "April 14, 2026 at 18:07 UTC";
+
+// ── Config ───────────────────────────────────────────────────────────────────
+const TEAMS = ["Ground Breakers","GroundsKeepers","Groundhog Day","Higher Ground"];
+const COLORS = {
+  "Ground Breakers":"#4F86C6",
+  "GroundsKeepers": "#5BAD72",
+  "Groundhog Day":  "#E5813A",
+  "Higher Ground":  "#9B6EC8",
+};
+const STAT_CLS = {
+  "Ground Breakers":"s-gb","GroundsKeepers":"s-gk",
+  "Groundhog Day":"s-ghd","Higher Ground":"s-hg",
+};
+
+// Date range derived from data
+const allDates  = RAW.flatMap(r => [new Date(r.start), new Date(r.end)]);
+const MIN_DATE  = new Date(Math.min(...allDates));
+const MAX_DATE  = new Date(Math.max(...allDates));
+const TOTAL_DAYS = (MAX_DATE - MIN_DATE) / 86400000;
+const TODAY      = new Date();
+
+let activeTeam = "all";
+let sortKey    = "start";
+let sortAsc    = true;
+
+function filtered() {
+  return activeTeam === "all" ? RAW : RAW.filter(r => r.team === activeTeam);
+}
+function pct(days)      { return (days / TOTAL_DAYS * 100).toFixed(4) + "%"; }
+function daysSince(ds)  { return (new Date(ds) - MIN_DATE) / 86400000; }
+function durDays(s, e)  { return Math.round((new Date(e) - new Date(s)) / 86400000); }
+function durLabel(days) { return days < 30 ? days + "d" : Math.round(days / 30.4) + " mo"; }
+function fmtDate(ds) {
+  return new Date(ds).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+}
+
+// ── Last refreshed ───────────────────────────────────────────────────────────
+if (LAST_REFRESHED) {
+  document.getElementById("last-updated").textContent =
+    "Data last refreshed: " + LAST_REFRESHED;
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const counts = {};
+  TEAMS.forEach(t => counts[t] = 0);
+  RAW.forEach(r => counts[r.team]++);
+
+  const done   = RAW.filter(r => new Date(r.end) <= TODAY);
+  const done25 = done.filter(r => new Date(r.end).getFullYear() === 2025).length;
+  const done26 = done.filter(r => new Date(r.end).getFullYear() === 2026).length;
+
+  document.getElementById("stats").innerHTML =
+    `<div class="stat-card s-total">
+       <div class="label">Total</div>
+       <div class="value">${RAW.length}</div>
+       <div class="sub">Implementations</div>
+     </div>` +
+    TEAMS.map(t => `
+     <div class="stat-card ${STAT_CLS[t]}">
+       <div class="label">${t}</div>
+       <div class="value" style="color:${COLORS[t]}">${counts[t]}</div>
+       <div class="sub">Implementations</div>
+     </div>`).join("") +
+    `<div class="stat-card s-done">
+       <div class="label">Completed</div>
+       <div class="value" style="color:#22c55e">${done.length}</div>
+       <div class="year-rows">
+         <div class="year-row"><span class="yr">2025</span><span class="yv">${done25}</span></div>
+         <div class="year-row"><span class="yr">2026</span><span class="yv">${done26}</span></div>
+       </div>
+     </div>`;
+}
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+function renderFilters() {
+  document.getElementById("filters").innerHTML =
+    `<span class="f-label">Filter by team:</span>` +
+    ["all",...TEAMS].map(t =>
+      `<button class="filter-btn ${activeTeam===t?"active":""}" data-team="${t}"
+         onclick="setFilter('${t}')">${t==="all"?"All Teams":t}</button>`
+    ).join("");
+}
+function setFilter(t) { activeTeam = t; renderFilters(); renderGantt(); renderTable(); }
+
+// ── Gantt ────────────────────────────────────────────────────────────────────
+function monthTicks() {
+  const ticks = [];
+  let d = new Date(MIN_DATE.getFullYear(), MIN_DATE.getMonth(), 1);
+  const end = new Date(MAX_DATE.getFullYear(), MAX_DATE.getMonth() + 1, 1);
+  while (d < end) {
+    const m = d.getMonth();
+    ticks.push({
+      label: d.toLocaleDateString("en-US",{month:"short"}),
+      year:  d.getFullYear(),
+      pos:   (d - MIN_DATE) / 86400000,
+      isQ:   m % 3 === 0,
+      q:     Math.floor(m / 3) + 1,
+    });
+    d = new Date(d.getFullYear(), m + 1, 1);
+  }
+  return ticks;
+}
+
+function renderGantt() {
+  const data  = filtered();
+  const ticks = monthTicks();
+
+  document.getElementById("showing-count").textContent =
+    `— ${data.length} of ${RAW.length} implementations`;
+
+  const headerTicks = ticks.map(tk => {
+    const p = pct(Math.max(tk.pos, 0));
+    return tk.isQ
+      ? `<div class="quarter-tick" style="left:${p}">Q${tk.q} ${tk.year}</div>`
+      : `<div class="month-tick"   style="left:${p}">${tk.label}</div>`;
+  }).join("");
+
+  const gridLines = ticks.map(tk =>
+    `<div class="g-line${tk.isQ?" quarter":""}" style="left:${pct(Math.max(tk.pos,0))}"></div>`
+  ).join("");
+
+  const groupsHtml = TEAMS.map(team => {
+    const rows = data.filter(r => r.team === team);
+    if (!rows.length) return "";
+    const color = COLORS[team];
+
+    const rowsHtml = rows.map(impl => {
+      const s    = daysSince(impl.start);
+      const w    = Math.max(daysSince(impl.end) - s, 1);
+      const days = durDays(impl.start, impl.end);
+      const label = w > TOTAL_DAYS * 0.05 ? impl.name : "";
+      return `
+        <div class="impl-row">
+          <div class="impl-name" title="${impl.name}">${impl.name}</div>
+          <div class="bar-track">
+            ${gridLines}
+            <div class="bar"
+              style="left:${pct(s)};width:${pct(w)};background:${color}"
+              data-name="${impl.name}" data-team="${impl.team}"
+              data-start="${impl.start}" data-end="${impl.end}" data-days="${days}"
+              onmouseenter="showTip(event,this)"
+              onmouseleave="hideTip()"
+              onmousemove="moveTip(event)">${label}</div>
+          </div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="team-group">
+        <div class="team-header-row">
+          <div class="team-header-label" style="color:${color}">${team}</div>
+          <div class="team-divider" style="background:${color}"></div>
+        </div>
+        ${rowsHtml}
+      </div>`;
+  }).join("");
+
+  document.getElementById("gantt").innerHTML = `
+    <div class="gantt-head">
+      <div class="g-label-col"></div>
+      <div class="g-track"><div class="quarter-row">${headerTicks}</div></div>
+    </div>
+    ${groupsHtml}`;
+}
+
+// ── Tooltip ──────────────────────────────────────────────────────────────────
+const tip = document.getElementById("tooltip");
+function showTip(e, el) {
+  const d = el.dataset;
+  const days = parseInt(d.days);
+  tip.innerHTML = `
+    <div class="t-name">${d.name}</div>
+    <div class="t-team">${d.team}</div>
+    <div class="t-row"><span class="t-key">Start</span><span>${fmtDate(d.start)}</span></div>
+    <div class="t-row"><span class="t-key">End</span><span>${fmtDate(d.end)}</span></div>
+    <div class="t-dur">${days} days &nbsp;·&nbsp; ${durLabel(days)}</div>`;
+  tip.style.display = "block";
+  moveTip(e);
+}
+function hideTip()  { tip.style.display = "none"; }
+function moveTip(e) {
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + 230 > window.innerWidth)  x = e.clientX - 230 - 14;
+  if (y + 130 > window.innerHeight) y = e.clientY - 130 - 14;
+  tip.style.left = x + "px";
+  tip.style.top  = y + "px";
+}
+
+// ── Table ────────────────────────────────────────────────────────────────────
+function renderTable() {
+  const data = [...filtered()].sort((a, b) => {
+    let va = a[sortKey], vb = b[sortKey];
+    if (sortKey === "duration") { va = durDays(a.start, a.end); vb = durDays(b.start, b.end); }
+    if (typeof va === "string") return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortAsc ? va - vb : vb - va;
+  });
+  document.getElementById("table-body").innerHTML = data.map(r => {
+    const days = durDays(r.start, r.end);
+    return `<tr>
+      <td><span class="badge" style="background:${COLORS[r.team]}">${r.team}</span></td>
+      <td>${r.name}</td>
+      <td>${fmtDate(r.start)}</td>
+      <td>${fmtDate(r.end)}</td>
+      <td><span class="dur">${days}d &nbsp;·&nbsp; ${durLabel(days)}</span></td>
+    </tr>`;
+  }).join("");
+}
+function sortTable(key) {
+  sortAsc = sortKey === key ? !sortAsc : true;
+  sortKey = key;
+  renderTable();
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+renderStats(); renderFilters(); renderGantt(); renderTable();
+</script>
+</body>
+</html>
