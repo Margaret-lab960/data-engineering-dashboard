@@ -282,7 +282,7 @@ const STAT_CLS = {
 };
 
 // Date range derived from data
-const allDates  = RAW.flatMap(r => [new Date(r.start), new Date(r.end)]);
+const allDates  = RAW.flatMap(r => [parseDate(r.start), parseDate(r.end)]);
 const MIN_DATE  = new Date(Math.min(...allDates));
 const MAX_DATE  = new Date(Math.max(...allDates));
 const TOTAL_DAYS = (MAX_DATE - MIN_DATE) / 86400000;
@@ -306,19 +306,21 @@ function twoQuartersAgoCutoff() {
 function filteredTable() {
   const cutoff = twoQuartersAgoCutoff();
   const teamData = activeTeams.size === 0 ? RAW : RAW.filter(r => activeTeams.has(r.team));
-  return teamData.filter(r => new Date(r.end) >= cutoff);
+  return teamData.filter(r => parseDate(r.end) >= cutoff);
 }
 function getStatus(startDs, endDs) {
-  if (new Date(endDs) < TODAY) return "completed";
-  if (new Date(startDs) <= TODAY) return "in-progress";
+  if (parseDate(endDs) < TODAY) return "completed";
+  if (parseDate(startDs) <= TODAY) return "in-progress";
   return "planned";
 }
 function pct(days)      { return (days / TOTAL_DAYS * 100).toFixed(4) + "%"; }
-function daysSince(ds)  { return (new Date(ds) - MIN_DATE) / 86400000; }
-function durDays(s, e)  { return Math.round((new Date(e) - new Date(s)) / 86400000); }
+function daysSince(ds)  { return (parseDate(ds) - MIN_DATE) / 86400000; }
+function parseDate(ds) { const [y,m,d] = ds.split('-').map(Number); return new Date(y, m-1, d); }
+function durDays(s, e)  { return Math.round((parseDate(e) - parseDate(s)) / 86400000); }
 function durLabel(days) { return days < 30 ? days + "d" : Math.round(days / 30.4) + " mo"; }
 function fmtDate(ds) {
-  return new Date(ds).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+  const [y, m, d] = ds.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
 }
 
 // ── Last refreshed ───────────────────────────────────────────────────────────
@@ -333,9 +335,9 @@ function renderStats() {
   TEAMS.forEach(t => counts[t] = 0);
   RAW.forEach(r => counts[r.team]++);
 
-  const done   = RAW.filter(r => new Date(r.end) <= TODAY);
-  const done25 = done.filter(r => new Date(r.end).getFullYear() === 2025).length;
-  const done26 = done.filter(r => new Date(r.end).getFullYear() === 2026).length;
+  const done   = RAW.filter(r => parseDate(r.end) <= TODAY);
+  const done25 = done.filter(r => parseDate(r.end).getFullYear() === 2025).length;
+  const done26 = done.filter(r => parseDate(r.end).getFullYear() === 2026).length;
 
   document.getElementById("stats").innerHTML =
     `<div class="stat-card s-total">
@@ -398,10 +400,10 @@ function monthTicks(minDate, maxDate) {
 
 function renderGantt() {
   const cutoff = twoQuartersAgoCutoff();
-  const data = filtered().filter(r => new Date(r.end) >= cutoff);
+  const data = filtered().filter(r => parseDate(r.end) >= cutoff);
 
   const ganttMinDate = cutoff;
-  const endDates = data.map(r => new Date(r.end));
+  const endDates = data.map(r => parseDate(r.end));
   const ganttMaxDate = endDates.length ? new Date(Math.max(...endDates)) : new Date();
   const ganttTotalDays = Math.max((ganttMaxDate - ganttMinDate) / 86400000, 1);
 
