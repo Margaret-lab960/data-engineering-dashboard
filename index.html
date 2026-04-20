@@ -633,16 +633,16 @@ function toggleTeam(t) {
 function clearFilter() { activeTeams.clear(); renderFilters(); renderGantt(); renderTable(); }
 
 // ── Gantt ────────────────────────────────────────────────────────────────────
-function monthTicks() {
+function monthTicks(minDate, maxDate) {
   const ticks = [];
-  let d = new Date(MIN_DATE.getFullYear(), MIN_DATE.getMonth(), 1);
-  const end = new Date(MAX_DATE.getFullYear(), MAX_DATE.getMonth() + 1, 1);
+  let d = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+  const end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 1);
   while (d < end) {
     const m = d.getMonth();
     ticks.push({
       label: d.toLocaleDateString("en-US",{month:"short"}),
       year:  d.getFullYear(),
-      pos:   (d - MIN_DATE) / 86400000,
+      pos:   (d - minDate) / 86400000,
       isQ:   m % 3 === 0,
       q:     Math.floor(m / 3) + 1,
     });
@@ -652,21 +652,31 @@ function monthTicks() {
 }
 
 function renderGantt() {
-  const data  = filtered();
-  const ticks = monthTicks();
+  const cutoff = twoQuartersAgoCutoff();
+  const data = filtered().filter(r => new Date(r.end) >= cutoff);
+
+  const ganttMinDate = cutoff;
+  const endDates = data.map(r => new Date(r.end));
+  const ganttMaxDate = endDates.length ? new Date(Math.max(...endDates)) : new Date();
+  const ganttTotalDays = Math.max((ganttMaxDate - ganttMinDate) / 86400000, 1);
+
+  const gPct = days => (Math.max(days, 0) / ganttTotalDays * 100).toFixed(4) + "%";
+  const gDaysSince = ds => (new Date(ds) - ganttMinDate) / 86400000;
+
+  const ticks = monthTicks(ganttMinDate, ganttMaxDate);
 
   document.getElementById("showing-count").textContent =
     `— ${data.length} of ${RAW.length} implementations`;
 
   const headerTicks = ticks.map(tk => {
-    const p = pct(Math.max(tk.pos, 0));
+    const p = gPct(Math.max(tk.pos, 0));
     return tk.isQ
       ? `<div class="quarter-tick" style="left:${p}">Q${tk.q} ${tk.year}</div>`
       : `<div class="month-tick"   style="left:${p}">${tk.label}</div>`;
   }).join("");
 
   const gridLines = ticks.map(tk =>
-    `<div class="g-line${tk.isQ?" quarter":""}" style="left:${pct(Math.max(tk.pos,0))}"></div>`
+    `<div class="g-line${tk.isQ?" quarter":""}" style="left:${gPct(Math.max(tk.pos,0))}"></div>`
   ).join("");
 
   const groupsHtml = TEAMS.map(team => {
@@ -675,17 +685,18 @@ function renderGantt() {
     const color = COLORS[team];
 
     const rowsHtml = rows.map(impl => {
-      const s    = daysSince(impl.start);
-      const w    = Math.max(daysSince(impl.end) - s, 1);
+      const rawS = gDaysSince(impl.start);
+      const s    = Math.max(rawS, 0);
+      const w    = Math.max(gDaysSince(impl.end) - s, 1);
       const days = durDays(impl.start, impl.end);
-      const label = w > TOTAL_DAYS * 0.05 ? impl.name : "";
+      const label = w > ganttTotalDays * 0.05 ? impl.name : "";
       return `
         <div class="impl-row">
           <div class="impl-name" title="${impl.name}">${impl.name}</div>
           <div class="bar-track">
             ${gridLines}
             <div class="bar"
-              style="left:${pct(s)};width:${pct(w)};background:${color}"
+              style="left:${gPct(s)};width:${gPct(w)};background:${color}"
               data-name="${impl.name}" data-team="${impl.team}"
               data-start="${impl.start}" data-end="${impl.end}" data-days="${days}"
               onmouseenter="showTip(event,this)"
