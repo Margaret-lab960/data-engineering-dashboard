@@ -214,314 +214,59 @@
 <script>
 // ── Data (auto-refreshed weekly from Notion) ─────────────────────────────────
 const RAW = [
-  {
-    "team": "Ground Breakers",
-    "name": "Kaiser Pareo ROC",
-    "start": "2025-01-01",
-    "end": "2025-04-20"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "Evernorth",
-    "start": "2025-01-01",
-    "end": "2025-04-23"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "GEHA",
-    "start": "2025-03-01",
-    "end": "2025-04-30"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "P32H",
-    "start": "2025-04-14",
-    "end": "2025-07-09"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "Samaritan",
-    "start": "2025-04-28",
-    "end": "2025-07-10"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "CareFirstRx",
-    "start": "2025-09-22",
-    "end": "2025-12-10"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "Aetna QNXT Rx",
-    "start": "2025-12-22",
-    "end": "2026-02-13"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "Arkansas Blue Med",
-    "start": "2026-03-01",
-    "end": "2026-06-01"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "Molina",
-    "start": "2026-03-15",
-    "end": "2026-06-15"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "HCSC",
-    "start": "2026-05-01",
-    "end": "2026-08-01"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "HMSA",
-    "start": "2026-05-01",
-    "end": "2026-08-01"
-  },
-  {
-    "team": "Ground Breakers",
-    "name": "P32H Rx",
-    "start": "2026-05-01",
-    "end": "2026-08-01"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "Kaiser Pareo NCAL/SCAL",
-    "start": "2025-01-01",
-    "end": "2025-04-01"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "AetnaRCE CC & Layout",
-    "start": "2025-01-01",
-    "end": "2025-04-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "BCBSNC SMA Layout",
-    "start": "2025-01-01",
-    "end": "2025-03-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "BCBSNCRX Part D",
-    "start": "2025-01-01",
-    "end": "2025-04-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "Kaiser SC elig fallout",
-    "start": "2025-04-21",
-    "end": "2025-05-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "NCState Aetna",
-    "start": "2025-05-12",
-    "end": "2025-07-07"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "AetnaRCE Updates, Rebuilds",
-    "start": "2025-05-15",
-    "end": "2025-07-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "BSCA",
-    "start": "2025-07-01",
-    "end": "2025-09-01"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "Medstar",
-    "start": "2025-07-15",
-    "end": "2025-10-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "WebTPA",
-    "start": "2025-06-15",
-    "end": "2025-10-07"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "AetnaRCE Rebuilds",
-    "start": "2025-11-01",
-    "end": "2026-01-01"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "Aetna Mercy Care",
-    "start": "2025-12-01",
-    "end": "2026-01-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "BCBSNC D-SNP",
-    "start": "2026-02-01",
-    "end": "2026-04-01"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "UnitedRx",
-    "start": "2026-02-01",
-    "end": "2026-05-01"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "EmblemRx PBM Migration",
-    "start": "2026-03-15",
-    "end": "2026-06-15"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "Medica DeanRx",
-    "start": "2026-04-01",
-    "end": "2026-07-01"
-  },
-  {
-    "team": "GroundsKeepers",
-    "name": "Christus",
-    "start": "2026-05-15",
-    "end": "2026-08-15"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "Qual Choice",
-    "start": "2025-05-19",
-    "end": "2025-07-17"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "BCBS SC Rx",
-    "start": "2025-05-12",
-    "end": "2025-07-24"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "Aetna QNXT Medical (CC)",
-    "start": "2025-06-01",
-    "end": "2025-08-04"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "UPMC",
-    "start": "2025-09-08",
-    "end": "2025-12-10"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "Solutions Group",
-    "start": "2025-11-17",
-    "end": "2026-01-01"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "Arkansas Blue Rx",
-    "start": "2026-01-01",
-    "end": "2026-04-01"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "Centene Pre-pay",
-    "start": "2026-05-01",
-    "end": "2026-08-01"
-  },
-  {
-    "team": "Groundhog Day",
-    "name": "Schumacher",
-    "start": "2026-05-01",
-    "end": "2026-08-01"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Kaiser HC TPL Notes",
-    "start": "2025-05-01",
-    "end": "2025-06-01"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Wellmark",
-    "start": "2025-05-01",
-    "end": "2025-07-01"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Excellus",
-    "start": "2025-05-12",
-    "end": "2025-10-01"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Kaiser PP COB - MC and ACT",
-    "start": "2025-06-15",
-    "end": "2025-08-15"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "BCBS KS Med",
-    "start": "2025-07-01",
-    "end": "2025-09-01"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "AetnaRx CET layout",
-    "start": "2025-08-01",
-    "end": "2025-09-22"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Kaiser AMB (SC/NC) Client Issue",
-    "start": "2025-08-04",
-    "end": "2025-09-15"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Kaiser AMB (MOCs) Client Issue",
-    "start": "2025-08-04",
-    "end": "2025-09-15"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Kaiser PP COB - O2",
-    "start": "2025-09-15",
-    "end": "2025-10-15"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "ElevanceMMM",
-    "start": "2026-02-01",
-    "end": "2026-04-15"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "BCBSMN",
-    "start": "2026-03-01",
-    "end": "2026-06-01"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Centene Dual-Eligible",
-    "start": "2026-03-15",
-    "end": "2026-05-15"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Cigna Global",
-    "start": "2026-03-15",
-    "end": "2026-05-15"
-  },
-  {
-    "team": "Higher Ground",
-    "name": "Moda Health",
-    "start": "2026-04-01",
-    "end": "2026-07-01"
-  }
+  {"team": "Ground Breakers", "name": "Kaiser Pareo ROC", "start": "2025-01-01", "end": "2025-04-20"},
+  {"team": "Ground Breakers", "name": "Evernorth", "start": "2025-01-01", "end": "2025-04-23"},
+  {"team": "Ground Breakers", "name": "GEHA", "start": "2025-03-01", "end": "2025-04-30"},
+  {"team": "Ground Breakers", "name": "P32H", "start": "2025-04-14", "end": "2025-07-09"},
+  {"team": "Ground Breakers", "name": "Samaritan", "start": "2025-04-28", "end": "2025-07-10"},
+  {"team": "Ground Breakers", "name": "HCSC", "start": "2026-05-01", "end": "2026-08-01"},
+  {"team": "Ground Breakers", "name": "HMSA", "start": "2026-05-01", "end": "2026-08-01"},
+  {"team": "Ground Breakers", "name": "P32H Rx", "start": "2026-05-01", "end": "2026-08-01"},
+  {"team": "Ground Breakers", "name": "Aetna QNXT Rx", "start": "2025-12-22", "end": "2026-02-13"},
+  {"team": "Ground Breakers", "name": "CareFirstRx", "start": "2025-09-22", "end": "2025-12-10"},
+  {"team": "Ground Breakers", "name": "Molina", "start": "2026-03-15", "end": "2026-06-15"},
+  {"team": "Ground Breakers", "name": "Arkansas Blue Med", "start": "2026-03-01", "end": "2026-06-01"},
+  {"team": "GroundsKeepers", "name": "Kaiser Pareo NCAL/SCAL", "start": "2025-01-01", "end": "2025-04-01"},
+  {"team": "GroundsKeepers", "name": "AetnaRCE CC & Layout", "start": "2025-01-01", "end": "2025-04-15"},
+  {"team": "GroundsKeepers", "name": "BCBSNC SMA Layout", "start": "2025-01-01", "end": "2025-03-15"},
+  {"team": "GroundsKeepers", "name": "BCBSNCRX Part D", "start": "2025-01-01", "end": "2025-04-15"},
+  {"team": "GroundsKeepers", "name": "NCState Aetna", "start": "2025-05-12", "end": "2025-07-07"},
+  {"team": "GroundsKeepers", "name": "WebTPA", "start": "2025-06-15", "end": "2025-10-07"},
+  {"team": "GroundsKeepers", "name": "Kaiser SC elig fallout", "start": "2025-04-21", "end": "2025-05-15"},
+  {"team": "GroundsKeepers", "name": "AetnaRCE Updates, Rebuilds", "start": "2025-05-15", "end": "2025-07-15"},
+  {"team": "GroundsKeepers", "name": "AetnaRCE Rebuilds", "start": "2025-11-01", "end": "2026-01-01"},
+  {"team": "GroundsKeepers", "name": "Aetna Mercy Care", "start": "2025-12-01", "end": "2026-01-15"},
+  {"team": "GroundsKeepers", "name": "Medica DeanRx", "start": "2026-04-01", "end": "2026-07-01"},
+  {"team": "GroundsKeepers", "name": "Medstar", "start": "2025-07-15", "end": "2025-10-15"},
+  {"team": "GroundsKeepers", "name": "BSCA", "start": "2025-07-01", "end": "2025-09-01"},
+  {"team": "GroundsKeepers", "name": "UnitedRx", "start": "2026-02-01", "end": "2026-05-01"},
+  {"team": "GroundsKeepers", "name": "BCBSNC D-SNP", "start": "2026-02-01", "end": "2026-04-01"},
+  {"team": "GroundsKeepers", "name": "EmblemRx PBM Migration", "start": "2026-03-15", "end": "2026-06-15"},
+  {"team": "GroundsKeepers", "name": "Christus", "start": "2026-05-15", "end": "2026-08-15"},
+  {"team": "Groundhog Day", "name": "UPMC", "start": "2025-09-08", "end": "2025-12-10"},
+  {"team": "Groundhog Day", "name": "Centene Pre-pay", "start": "2026-05-01", "end": "2026-08-01"},
+  {"team": "Groundhog Day", "name": "Solutions Group", "start": "2025-11-17", "end": "2026-01-01"},
+  {"team": "Groundhog Day", "name": "Schumacher", "start": "2026-05-01", "end": "2026-08-01"},
+  {"team": "Groundhog Day", "name": "Qual Choice", "start": "2025-05-19", "end": "2025-07-17"},
+  {"team": "Groundhog Day", "name": "BCBS SC Rx", "start": "2025-05-12", "end": "2025-07-24"},
+  {"team": "Groundhog Day", "name": "Aetna QNXT Medical (CC)", "start": "2025-06-01", "end": "2025-08-04"},
+  {"team": "Groundhog Day", "name": "Arkansas Blue Rx", "start": "2026-01-01", "end": "2026-04-01"},
+  {"team": "Higher Ground", "name": "BCBSMN", "start": "2026-03-01", "end": "2026-06-01"},
+  {"team": "Higher Ground", "name": "Kaiser AMB (SC/NC) Client Issue", "start": "2025-08-04", "end": "2025-09-15"},
+  {"team": "Higher Ground", "name": "Kaiser AMB (MOCs) Client Issue", "start": "2025-08-04", "end": "2025-09-15"},
+  {"team": "Higher Ground", "name": "Excellus", "start": "2025-05-12", "end": "2025-10-01"},
+  {"team": "Higher Ground", "name": "Wellmark", "start": "2025-05-01", "end": "2025-07-01"},
+  {"team": "Higher Ground", "name": "AetnaRx CET layout", "start": "2025-08-01", "end": "2025-09-22"},
+  {"team": "Higher Ground", "name": "Kaiser HC TPL Notes", "start": "2025-05-01", "end": "2025-06-01"},
+  {"team": "Higher Ground", "name": "Kaiser PP COB - O2", "start": "2025-09-15", "end": "2025-10-15"},
+  {"team": "Higher Ground", "name": "Kaiser PP COB - MC and ACT", "start": "2025-06-15", "end": "2025-08-15"},
+  {"team": "Higher Ground", "name": "ElevanceMMM", "start": "2026-02-01", "end": "2026-04-15"},
+  {"team": "Higher Ground", "name": "Moda Health", "start": "2026-04-01", "end": "2026-07-01"},
+  {"team": "Higher Ground", "name": "BCBS KS Med", "start": "2025-07-01", "end": "2025-09-01"},
+  {"team": "Higher Ground", "name": "Centene Dual-Eligible", "start": "2026-03-15", "end": "2026-05-15"},
+  {"team": "Higher Ground", "name": "Cigna Global", "start": "2026-03-15", "end": "2026-05-15"}
 ];
-const LAST_REFRESHED = "April 14, 2026 at 18:07 UTC";
+const LAST_REFRESHED = "April 20, 2026 at 13:57 UTC";
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const TEAMS = ["Ground Breakers","GroundsKeepers","Groundhog Day","Higher Ground"];
