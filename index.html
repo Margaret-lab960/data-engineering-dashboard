@@ -164,8 +164,10 @@
       display: inline-block; padding: 2px 10px;
       border-radius: 12px; font-size: 0.7rem;
       font-weight: 600; color: white;
+      width: 130px; text-align: center;
     }
     .dur { font-size: 0.75rem; color: #888; }
+    .planned-tag { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
 
     @media (max-width: 768px) {
       .container { padding: 16px; }
@@ -541,12 +543,30 @@ const MAX_DATE  = new Date(Math.max(...allDates));
 const TOTAL_DAYS = (MAX_DATE - MIN_DATE) / 86400000;
 const TODAY      = new Date();
 
-let activeTeam = "all";
+let activeTeams = new Set();
 let sortKey    = "start";
 let sortAsc    = true;
 
 function filtered() {
-  return activeTeam === "all" ? RAW : RAW.filter(r => r.team === activeTeam);
+  return activeTeams.size === 0 ? RAW : RAW.filter(r => activeTeams.has(r.team));
+}
+function twoQuartersAgoCutoff() {
+  const now = new Date();
+  const qStart = Math.floor(now.getMonth() / 3) * 3;
+  let cutoffMonth = qStart - 6;
+  let cutoffYear = now.getFullYear();
+  if (cutoffMonth < 0) { cutoffMonth += 12; cutoffYear -= 1; }
+  return new Date(cutoffYear, cutoffMonth, 1);
+}
+function filteredTable() {
+  const cutoff = twoQuartersAgoCutoff();
+  const teamData = activeTeams.size === 0 ? RAW : RAW.filter(r => activeTeams.has(r.team));
+  return teamData.filter(r => new Date(r.end) >= cutoff);
+}
+function getStatus(startDs, endDs) {
+  if (new Date(endDs) < TODAY) return "completed";
+  if (new Date(startDs) <= TODAY) return "in-progress";
+  return "planned";
 }
 function pct(days)      { return (days / TOTAL_DAYS * 100).toFixed(4) + "%"; }
 function daysSince(ds)  { return (new Date(ds) - MIN_DATE) / 86400000; }
@@ -596,14 +616,21 @@ function renderStats() {
 
 // ── Filters ──────────────────────────────────────────────────────────────────
 function renderFilters() {
+  const allActive = activeTeams.size === 0;
   document.getElementById("filters").innerHTML =
     `<span class="f-label">Filter by team:</span>` +
-    ["all",...TEAMS].map(t =>
-      `<button class="filter-btn ${activeTeam===t?"active":""}" data-team="${t}"
-         onclick="setFilter('${t}')">${t==="all"?"All Teams":t}</button>`
+    `<button class="filter-btn ${allActive?"active":""}" data-team="all"
+       onclick="clearFilter()">All Teams</button>` +
+    TEAMS.map(t =>
+      `<button class="filter-btn ${activeTeams.has(t)?"active":""}" data-team="${t}"
+         onclick="toggleTeam('${t}')">${t}</button>`
     ).join("");
 }
-function setFilter(t) { activeTeam = t; renderFilters(); renderGantt(); renderTable(); }
+function toggleTeam(t) {
+  if (activeTeams.has(t)) { activeTeams.delete(t); } else { activeTeams.add(t); }
+  renderFilters(); renderGantt(); renderTable();
+}
+function clearFilter() { activeTeams.clear(); renderFilters(); renderGantt(); renderTable(); }
 
 // ── Gantt ────────────────────────────────────────────────────────────────────
 function monthTicks() {
@@ -691,12 +718,16 @@ const tip = document.getElementById("tooltip");
 function showTip(e, el) {
   const d = el.dataset;
   const days = parseInt(d.days);
+  const status = getStatus(d.start, d.end);
+  const durLine = status === "planned"
+    ? `<div class="t-dur">Planned</div>`
+    : `<div class="t-dur">${days} days &nbsp;·&nbsp; ${durLabel(days)}</div>`;
   tip.innerHTML = `
     <div class="t-name">${d.name}</div>
     <div class="t-team">${d.team}</div>
     <div class="t-row"><span class="t-key">Start</span><span>${fmtDate(d.start)}</span></div>
     <div class="t-row"><span class="t-key">End</span><span>${fmtDate(d.end)}</span></div>
-    <div class="t-dur">${days} days &nbsp;·&nbsp; ${durLabel(days)}</div>`;
+    ${durLine}`;
   tip.style.display = "block";
   moveTip(e);
 }
@@ -711,7 +742,7 @@ function moveTip(e) {
 
 // ── Table ────────────────────────────────────────────────────────────────────
 function renderTable() {
-  const data = [...filtered()].sort((a, b) => {
+  const data = [...filteredTable()].sort((a, b) => {
     let va = a[sortKey], vb = b[sortKey];
     if (sortKey === "duration") { va = durDays(a.start, a.end); vb = durDays(b.start, b.end); }
     if (typeof va === "string") return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
@@ -719,12 +750,16 @@ function renderTable() {
   });
   document.getElementById("table-body").innerHTML = data.map(r => {
     const days = durDays(r.start, r.end);
+    const status = getStatus(r.start, r.end);
+    const durCell = status === "planned"
+      ? `<span class="planned-tag">Planned</span>`
+      : `<span class="dur">${days}d &nbsp;·&nbsp; ${durLabel(days)}</span>`;
     return `<tr>
       <td><span class="badge" style="background:${COLORS[r.team]}">${r.team}</span></td>
       <td>${r.name}</td>
       <td>${fmtDate(r.start)}</td>
       <td>${fmtDate(r.end)}</td>
-      <td><span class="dur">${days}d &nbsp;·&nbsp; ${durLabel(days)}</span></td>
+      <td>${durCell}</td>
     </tr>`;
   }).join("");
 }
