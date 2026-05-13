@@ -307,9 +307,8 @@ function twoQuartersAgoCutoff() {
   return new Date(cutoffYear, cutoffMonth, 1);
 }
 function filteredTable() {
-  const cutoff = twoQuartersAgoCutoff();
   const teamData = activeTeams.size === 0 ? RAW : RAW.filter(r => activeTeams.has(r.team));
-  return teamData.filter(r => parseDate(r.end) >= cutoff);
+  return teamData.filter(r => getStatus(r.start, r.end) === "planned");
 }
 function getStatus(startDs, endDs) {
   if (parseDate(endDs) < TODAY) return "completed";
